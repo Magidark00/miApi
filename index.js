@@ -3,8 +3,9 @@ const cors = require('cors');
 const sequelize = require('./config/db');
 require('dotenv').config();
 
-//Importar Modelos para que Squelize los registre
-const Producto = require('./models/Producto');
+// Importar modelos (con sus asociaciones) para que Sequelize los registre
+require('./models');
+const apiRoutes = require('./routes/api');
 
 const app = express();
 
@@ -18,6 +19,12 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.send('¡API Backend funcionando exitosamente!');
 });
+
+// --- RUTAS DE LA API ---
+// Se montan en /api (usado por las guías #10 y #11) y también en la raíz,
+// para que funcione sin importar si el baseURL del frontend lleva /api o no.
+app.use('/api', apiRoutes);
+app.use('/', apiRoutes);
 
 // --- SINCRONIZACIÓN Y ARRANQUE ---
 const PORT = process.env.PORT || 3011;
