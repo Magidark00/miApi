@@ -24,7 +24,7 @@ app.use(express.json());
 
 const limitador = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: process.env.NODE_ENV === 'production' ? 100 : 2000,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Demasiadas peticiones. Intenta nuevamente más tarde.' }

@@ -27,7 +27,8 @@ router.get('/', async (req, res) => {
 // Si cualquier paso falla, no se guarda nada (rollback).
 router.post('/', async (req, res) => {
     try {
-        const { producto_id, usuario_id, tipo_movimiento, observaciones } = req.body;
+        const { producto_id, tipo_movimiento, observaciones } = req.body;
+        const usuario_id = req.usuario.id;
         const cantidad = Number(req.body.cantidad);
 
         if (!['Entrada', 'Salida', 'Ajuste'].includes(tipo_movimiento)) {

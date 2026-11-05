@@ -3,9 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const emitirToken = (usuario) => jwt.sign(
-    { id: usuario.id, rol: usuario.rol },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '2h' }
+    { id: usuario.id, rol: usuario.rol }, 
+    process.env.JWT_SECRET, 
+    { expiresIn: '8h' }
 );
 
 exports.registrar = async (req, res) => {
