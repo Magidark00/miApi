@@ -2,6 +2,7 @@ const express = require('express');
 const crudRouter = require('./crudRouter');
 const movimientosRouter = require('./movimientos');
 const { Categoria, Proveedor, Producto, Usuario } = require('../models');
+const autenticar = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.use('/productos', crudRouter(Producto, {
 router.use('/categorias', crudRouter(Categoria));
 router.use('/proveedores', crudRouter(Proveedor));
 // El password nunca se devuelve al frontend
-router.use('/usuarios', crudRouter(Usuario, { attributes: { exclude: ['password'] } }));
+router.use('/usuarios', autenticar(['Administrador']), crudRouter(Usuario, { attributes: { exclude: ['password'] } }));
 router.use('/movimientos', movimientosRouter);
 
 module.exports = router;

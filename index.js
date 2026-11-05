@@ -1,30 +1,46 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+require('dotenv').config({ path: ['.env.local', '.env'] });
 const sequelize = require('./config/db');
-require('dotenv').config();
 
 // Importar modelos (con sus asociaciones) para que Sequelize los registre
 require('./models');
 const apiRoutes = require('./routes/api');
+const authRoutes = require('./routes/auth');
+const autenticar = require('./middleware/authMiddleware');
 
 const app = express();
 
-// --- MIDDLEWARES ---
-// Habilitar CORS para permitir peticiones desde el frontend (React)
-app.use(cors());
-// Parsear el body de las peticiones a JSON
+// --- SEGURIDAD Y MIDDLEWARES ---
+app.use(helmet());
+app.use(cors({
+    origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
+
+const limitador = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Demasiadas peticiones. Intenta nuevamente más tarde.' }
+});
+app.use('/api/', limitador);
 
 // --- RUTAS BÁSICAS DE PRUEBA ---
 app.get('/', (req, res) => {
     res.send('¡API Backend funcionando exitosamente!');
 });
 
-// --- RUTAS DE LA API ---
-// Se montan en /api (usado por las guías #10 y #11) y también en la raíz,
-// para que funcione sin importar si el baseURL del frontend lleva /api o no.
-app.use('/api', apiRoutes);
-app.use('/', apiRoutes);
+// Login y registro son públicos; el resto de la API requiere un JWT válido.
+app.use('/api/auth', authRoutes);
+app.use('/api', autenticar(), apiRoutes);
+// Compatibilidad con las rutas anteriores que no incluían el prefijo /api.
+app.use('/', autenticar(), apiRoutes);
 
 // --- SINCRONIZACIÓN Y ARRANQUE ---
 const PORT = process.env.PORT || 3011;
